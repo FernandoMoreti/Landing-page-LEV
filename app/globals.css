@@ -1,4 +1,16 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  overscroll-behavior: none; /* Trava o "pulo" elástico do navegador */
+  background-color: #000;    /* Fundo preto padrão para portfólio moderno */
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
 
 :root {
   --background: #ffffff;

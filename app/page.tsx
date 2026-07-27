@@ -1,65 +1,76 @@
-import Image from "next/image";
+'use client';
+import { useEffect, useRef } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { Float, Environment, OrbitControls } from '@react-three/drei';
+import Lenis from '@studio-freight/lenis';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import dynamic from 'next/dynamic';
+
+gsap.registerPlugin(ScrollTrigger);
+
+// Importa o teclado dinamicamente para rodar apenas no navegador (evita erros de SSR)
+const Lev = dynamic(() => import('../components/Object3D/Lev').then(m => m.Model), { ssr: false });
 
 export default function Home() {
+  const container = useRef(null);
+
+  useEffect(() => {
+    // 1. Inicializa o Scroll Suave (Lenis)
+    const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // 2. Animação de Scroll (GSAP)
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: container.current,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+        pin: ".canvas-wrapper",
+      }
+    });
+
+    tl.to(".canvas-wrapper", { opacity: 0, ease: "power2.inOut" });
+
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main ref={container} className="relative w-full bg-white">
+      <div className="canvas-wrapper w-full h-screen fixed top-0 left-0 z-0 bg-linear-to-tr from-[#EC7661] to-[#5e499c]">
+        <Canvas camera={{ position: [0, 0, 8], fov: 20 }}>
+          <Environment preset="city" />
+          <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+            <Lev />
+          </Float>
+          <OrbitControls enableZoom={false} enablePan={false} />
+        </Canvas>
+      </div>
+
+      <section className="bg-white h-screen flex items-center justify-center relative z-10">
+        <h1 className="text-8xl font-black text-black uppercase tracking-tighter">Lev Negócios</h1>
+      </section>
+
+      <section className="h-screen flex items-center justify-center relative z-10 bg-transparent">
+        <h2 className="text-6xl font-bold">Desenvolvedor Frontend Criativo</h2>
+      </section>
+
+      <section className="min-h-screen p-20 bg-white text-black relative z-10 rounded-t-[40px]">
+        <h2 className="text-5xl mb-12 font-bold uppercase">Projetos Selecionados</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-96 bg-gray-100 rounded-3xl border border-gray-200 hover:scale-[1.02] transition-transform duration-300" />
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+
+    </main>
   );
 }
